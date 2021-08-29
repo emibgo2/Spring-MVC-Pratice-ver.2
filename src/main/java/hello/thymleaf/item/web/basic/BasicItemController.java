@@ -19,7 +19,7 @@ import java.util.Map;
 
 @Slf4j
 @Controller
-@RequestMapping("/basic/items")
+@RequestMapping("/message/items")
 @RequiredArgsConstructor
 public class BasicItemController {
     private final ItemRepository itemRepository;
@@ -95,7 +95,7 @@ public class BasicItemController {
     @PostMapping("/{itemId}/edit")
     public String edit(@PathVariable Long itemId,@ModelAttribute Item item) {
         itemRepository.update(itemId,item);
-        return "redirect:/basic/items/{itemId}";
+        return "redirect:/message/items/{itemId}";
     }
 
     /**
