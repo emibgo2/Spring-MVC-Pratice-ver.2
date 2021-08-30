@@ -1,4 +1,4 @@
-package hello.thymleaf.item.web.basic;
+package hello.thymleaf.validation;
 
 import hello.thymleaf.item.DeliveryCode;
 import hello.thymleaf.item.Item;
@@ -8,20 +8,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Controller
-@RequestMapping("/message/items")
+@RequestMapping("/validation/v1/items")
 @RequiredArgsConstructor
-public class BasicItemController {
+public class ValidationItemControllerV1 {
     private final ItemRepository itemRepository;
 
     @ModelAttribute("regions")
@@ -54,7 +52,7 @@ public class BasicItemController {
     public String items(Model model) {
         List<Item> items = itemRepository.findAll();
         model.addAttribute("items", items);
-        return "basic/items";
+        return "validation/v1/items";
     }
 
     @GetMapping("/{itemId}")
@@ -62,21 +60,47 @@ public class BasicItemController {
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
 
-        return "basic/item";
+        return "validation/v1/item";
     }
 
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("item", new Item());
 
-        return "basic/addForm";
+        return "validation/v1/addForm";
     }
 
     @PostMapping("/add")
-    public String addItemV6(Item item, RedirectAttributes redirectAttributes) {
-        log.info("item.open={}",item.getOpen());
-        log.info("item.regions={}", item.getRegions());
-        log.info("item.itemType={}", item.getItemType());
+    public String addItemV(Item item, RedirectAttributes redirectAttributes, Model model) {
+
+        // 검증 오류를 보관
+        Map<String, String> errors = new HashMap<>();
+
+        // 검증 로직
+        if (!StringUtils.hasText(item.getItemName())) {
+            errors.put("itemName", "상품 이름은 필수입니다.");
+        }
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            errors.put("price", "가격은 1,000 ~ 1,000,000 까지 허용 합니다.");
+        }
+        if (item.getQuantity() == null || item.getQuantity() >= 9999) {
+            errors.put("quantity", "수량은 최대 9,999 까지 허용 합니다.");
+        }
+
+        // 특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                errors.put("globalError", "가격 * 수랑의 합은 10,000원 이상이어야 합니다. 현재 값 = " + resultPrice);
+            }
+        }
+
+        // 검증에 실패하면 다시 입력 폼으로
+        if (!errors.isEmpty()) {
+            log.info("errors = {} ", errors);
+            model.addAttribute("errors", errors);
+            return "validation/v1/addForm";
+        }
 
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId", savedItem.getId());
@@ -89,18 +113,18 @@ public class BasicItemController {
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
 
-        return "basic/editForm";
+        return "validation/v1/editForm";
     }
 
     @PostMapping("/{itemId}/edit")
     public String edit(@PathVariable Long itemId,@ModelAttribute Item item) {
         itemRepository.update(itemId,item);
-        return "redirect:/message/items/{itemId}";
+        return "redirect:/validation/v1/items/{itemId}";
     }
 
-    /**
-     * 테스트용 데이터 추가
-     */
+//    /**
+//     * 테스트용 데이터 추가
+//     */
 //    @PostConstruct
 //    public void init() {
 //        itemRepository.save(new Item("itemA", 10000, 10));

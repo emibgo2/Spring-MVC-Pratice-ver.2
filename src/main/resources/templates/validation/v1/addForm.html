@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <link th:href="@{/bootstrap.min.css}"
+          href="../css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .container {
+      max-width: 560px;
+    }
+    .field-error {
+        board-color: #dc3545;
+        color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="py-5 text-center">
+    <h2 th:text="#{page.addItem}">상품 등록 폼</h2>
+  </div>
+  <h4 class="mb-3">상품 입력</h4>
+  <form action="item.html" th:action th:object="${item}" method="post">
+
+      <div th:if="${errors?.containsKey('globalError')}">
+          <p class="field-error" th:text="${errors['globalError']}">전체 오류 메시지</p>
+      </div>
+
+<!--   action에 값이 없으면 현재 URL에 전송 -->
+    <div>
+        <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
+      <input type="text" id="itemName"  th:field="*{itemName}"
+             th:class="${errors?.containsKey('itemName')} ? 'form-control field-error': 'form-control' "
+             class="form-control" placeholder="이름을 입력하세요">
+        <div th:if="${errors?.containsKey('itemName')}" class="field-error" th:text="${errors['itemName']}">
+            상품명 오류
+        </div>
+    </div>
+    <div>
+      <label for="price" th:text="#{label.item.price}">가격</label>
+      <input type="text" id="price" th:field="*{price}"
+             th:class="${errors?.containsKey('price')} ? 'form-control field-error': 'form-control' "
+             class="form-control" placeholder="가격을 입력하세요">
+        <div th:if="${errors?.containsKey('price')}" class="field-error" th:text="${errors['price']}">
+            가격 오류
+        </div>
+    </div>
+    <div>
+      <label for="quantity" th:text="#{label.item.quantity}">수량</label>
+      <input type="text" id="quantity" th:field="*{quantity}"
+             th:class="${errors?.containsKey('quantity')} ? 'form-control field-error': 'form-control' "
+             class="form-control" placeholder="수량을 입력하세요">
+        <div th:if="${errors?.containsKey('quantity')}" class="field-error" th:text="${errors['quantity']}">
+            수량 오류
+        </div>
+    </div>
+    <hr class="my-4">
+      <!-- single checkbox -->
+      <div>판매 여부</div>
+      <div>
+          <div class="form-check">
+              <input type="checkbox" id="open" name="open" th:field="*{open}" class="form-check-input">
+<!--              <input type="hidden" name="_open" value="on"/>    -->
+              <!-- 히든 필드 추가  스프링에서만 지원 ( 체크 박스 false값 추출 )-->
+              <label for="open" class="form-check-label">판매 오픈</label>
+          </div>
+      </div>
+      <!-- multi checkbox -->
+      <div>
+          <div>등록 지역</div>
+          <div th:each="region : ${regions}" class="form-check form-check-inline">
+              <input type="checkbox" th:field="*{regions}" th:value="${region.key}"
+                     class="form-check-input">
+              <label th:for="${#ids.prev('regions')}"
+                     th:text="${region.value}" class="form-check-label">서울</label>
+          </div>
+      </div>
+
+      <!-- radio button -->
+      <div>
+          <div>상품 종류</div>
+          <div th:each="type : ${itemTypes}" class="form-check form-check-inline">
+              <input type="radio" th:field="*{itemType}" th:value="${type.name()}"class="form-check-input">
+              <label th:for="${#ids.prev('itemType')}" th:text="${type.description}"
+                     class="form-check-label">
+                  BOOK
+              </label>
+          </div>
+      </div>
+
+      <!-- SELECT -->
+      <div>
+          <div>배송 방식</div>
+          <select th:field="*{deliveryCode}" class="form-select">
+              <option value="">==배송 방식 선택==</option>
+              <option th:each="deliveryCode : ${deliveryCodes}" th:value="${deliveryCode.code}"
+                      th:text="${deliveryCode.displayName}">FAST</option>
+          </select>
+      </div>
+      <hr class="my-4">
+    <div class="row">
+      <div class="col">
+        <button class="w-100 btn btn-primary btn-lg"
+                type="submit" th:text="#{button.save}" >상품 등록</button>
+      </div>
+      <div class="col">
+        <button class="w-100 btn btn-secondary btn-lg"
+                onclick="location.href='items.html'"
+                th:onclick="|location.href='@{/validation/v1/items}'|"
+                th:text="#{button.cancel}"
+                type="button">취소</button>
+      </div>
+    </div>
+  </form>
+</div> <!-- /container -->
+</body>
+</html>
