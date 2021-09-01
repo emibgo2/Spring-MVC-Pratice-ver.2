@@ -11,12 +11,12 @@
     <th>username</th>
     <th>age</th>
   </tr>
-  <tr th:each="user, userStat : ${users}">
+  <tr th:each="user : ${users}">
     <td th:text="${userStat.count}">1</td>
     <td th:text="${user.username}">username</td>
     <td>
       <span th:text="${user.age}">0</span>
-      <span th:text="'미성년자'" th:if="${user.age lt 20}"></span>
+      <span th:text="'미성년자'" th:if="${user.age lt  20}"></span>
       <span th:text="'미성년자'" th:unless="${user.age ge 20}"></span>
     </td>
   </tr>
